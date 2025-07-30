@@ -1,6 +1,6 @@
 --サブテラーの導師
 --Subterror Guru
---Scripted by Eerie Code
+--Scripted by Sorpresa37
 local s,id=GetID()
 function s.initial_effect(c)
 	--search
