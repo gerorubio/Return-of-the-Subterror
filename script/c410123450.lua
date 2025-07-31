@@ -59,7 +59,8 @@ function s.FromGyToHandOp(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.FaceUpSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chk ==  0 then return Duel.GetLocationCount(tp, LOCATION_MZONE > 0) and Duel.IsExistingMatchingCard()
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.FaceUpSubterrorMonster(chkc) end
+	if chk ==  0 then return Duel.GetLocationCount(tp, LOCATION_MZONE > 0) and Duel.IsExistingMatchingCard(s.FaceUpSubterrorMonster, tp, LOCATION_MZONE, 0, 1, nill)
 end
 
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
