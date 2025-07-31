@@ -51,7 +51,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.setcon1(e,tp,eg,ep,ev,re,r,rp)
-	print("Card")
+	print(Card.GetMainCardType())
 	return not Duel.IsExistingMatchingCard(
 		aux.FaceupFilter(Card.GetMainCardType,TYPE_MONSTER), -- function
 		tp, -- player
