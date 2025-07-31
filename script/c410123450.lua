@@ -1,6 +1,7 @@
 --Subterror Nemesis Sorcerer
 --Scripted by Sorpresa37
 local s,id=GetID()
+
 function s.initial_effect(c)
 	-- Recover Subterror card from GY
 	local e1=Effect.CreateEffect(c)
@@ -12,7 +13,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.thtg)
 	e1:SetOperation(s.thop)
 	c:RegisterEffect(e1)
-	--position
+	-- Special Summon Subterror from deck by flipping face down a Subterror monster
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON)
@@ -24,25 +25,20 @@ function s.initial_effect(c)
 	e2:SetTarget(s.settg)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
-	local e3=e2:Clone()
-	e3:SetType(EFFECT_TYPE_QUICK_O)
-	e3:SetCode(EVENT_FREE_CHAIN)
-	e3:SetHintTiming(0,TIMINGS_CHECK_MONSTER_E)
-	e3:SetCondition(s.setcon2)
-	c:RegisterEffect(e3)
 end
+
 s.listed_series={SET_SUBTERROR}
 s.listed_names={id}
 function s.thfilter(c)
 	return c:IsSetCard(SET_SUBTERROR) and not c:IsCode(id) and c:IsAbleToHand()
 end
+
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    print('thtg')
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
+
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-    print('thop')
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 	if #g>0 then
@@ -50,23 +46,27 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
+
 function s.setcon1(e,tp,eg,ep,ev,re,r,rp)
-	print(Card.GetMainCardType())
+	-- Checks if COUNT cards exist in locations S on PLAYER side of the field and O on their opponent's for which F returns true, except (Card ex)
 	return not Duel.IsExistingMatchingCard(
-		aux.FaceupFilter(Card.GetMainCardType,TYPE_MONSTER), -- function
-		tp, -- player
-		LOCATION_ONFIELD, -- s
-		0, -- o
-		1, --  count
+		aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR), -- F
+		tp, -- PLAYER
+		LOCATION_ONFIELD, -- S
+		0, -- O
+		1, --  COUNT
 		e:GetHandler()
 	)
 end
+
 function s.setcon2(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR),tp,LOCATION_ONFIELD,0,1,e:GetHandler())
 end
+
 function s.setfilter(c)
 	return c:IsFaceup() and c:IsCanTurnSet()
 end
+
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc~=c and s.setfilter(chkc) end
@@ -77,6 +77,7 @@ function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	g:AddCard(c)
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,2,0,0)
 end
+
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
