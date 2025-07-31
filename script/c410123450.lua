@@ -2,7 +2,7 @@
 --Scripted by Sorpresa37
 local s,id=GetID()
 function s.initial_effect(c)
-	--search
+	-- Recover Subterror card from GY
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_LEAVE_GRAVE)
@@ -15,7 +15,7 @@ function s.initial_effect(c)
 	--position
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_POSITION)
+	e2:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetRange(LOCATION_MZONE)
@@ -51,7 +51,15 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.setcon1(e,tp,eg,ep,ev,re,r,rp)
-	return not Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR),tp,LOCATION_ONFIELD,0,1,e:GetHandler())
+	print(Card)
+	return not Duel.IsExistingMatchingCard(
+		aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR), -- function
+		tp, -- player
+		LOCATION_ONFIELD, -- s
+		0, -- o
+		1, --  count
+		e:GetHandler()
+	)
 end
 function s.setcon2(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR),tp,LOCATION_ONFIELD,0,1,e:GetHandler())
