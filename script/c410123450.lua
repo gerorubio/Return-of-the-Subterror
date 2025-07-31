@@ -53,7 +53,7 @@ end
 function s.setcon1(e,tp,eg,ep,ev,re,r,rp)
 	print("Card")
 	return not Duel.IsExistingMatchingCard(
-		aux.FaceupFilter(Card.IsSetCard,SET_SUBTERROR), -- function
+		aux.FaceupFilter(Card.GetMainCardType,TYPE_MONSTER), -- function
 		tp, -- player
 		LOCATION_ONFIELD, -- s
 		0, -- o
