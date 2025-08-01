@@ -119,10 +119,10 @@ function s.SpecialSummonFromHand(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
 	if not (tc and tc:IsRelateToEffect(e)) then return end
-	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
+	if Duel.SpecialSummon(c, 0, tp, tp, false, false, POS_FACEUP)>0 then
 		if tc:IsFacedown() and tc:IsCanChangePosition() then
-			local pos=Duel.SelectPosition(tp,tc,POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
-			Duel.ChangePosition(tc,pos)
+			local pos=Duel.SelectPosition(tp, tc, POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
+			Duel.ChangePosition(tc, pos)
 		end
 	end
 end
