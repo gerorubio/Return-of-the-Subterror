@@ -61,17 +61,26 @@ end
 
 -- Targets and operations
 function s.GyTargetToHand(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.GyTarget(chkc) end
+	if chk==0 then return Duel.IsExistingTarget(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectTarget(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,tp,0)
+	-- if chk==0 then return Duel.IsExistingMatchingCard(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
+	-- Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 
 function s.FromGyToHandOp(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local g=Duel.SelectMatchingCard(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
-	if #g>0 then
-		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		Duel.ConfirmCards(1-tp,g)
+	local tc=Duel.GetFirstTarget()
+	if tc:IsRelateToEffect(e) then
+		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
+	-- Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- local g=Duel.SelectMatchingCard(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
+	-- if #g>0 then
+	-- 	Duel.SendtoHand(g,nil,REASON_EFFECT)
+	-- 	Duel.ConfirmCards(1-tp,g)
+	-- end
 end
 
 function s.FaceUpSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
@@ -118,7 +127,7 @@ end
 function s.SpecialSummonFromHand(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if not (tc and tc:IsRelateToEffect(e)) then return end
+	-- if not (tc and tc:IsRelateToEffect(e)) then return end
 	if Duel.SpecialSummon(c, 0, tp, tp, false, false, POS_FACEUP)>0 then
 		if tc:IsFacedown() and tc:IsCanChangePosition() then
 			local pos=Duel.SelectPosition(tp, tc, POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
