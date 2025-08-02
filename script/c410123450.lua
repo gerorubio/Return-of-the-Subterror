@@ -56,7 +56,7 @@ function s.FaceDownSubterrorMonster(c)
 end
 
 function s.SubterrorMonsterInDeck(c, e, tp)
-	return c:IsSetCard(SET_SUBTERROR) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e, 0, tp, false, true)
+	return c:IsSetCard(SET_SUBTERROR) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e, 0, tp, false, true) and not c:IsCode(id)
 end
 
 -- Targets and operations
