@@ -60,14 +60,14 @@ function s.SubterrorMonsterInDeck(c, e, tp)
 end
 
 -- Targets and operations
+
+-- Effect 1
 function s.GyTargetToHand(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.GyTarget(chkc) end
 	if chk==0 then return Duel.IsExistingTarget(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectTarget(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,tp,0)
-	-- if chk==0 then return Duel.IsExistingMatchingCard(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
-	-- Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 
 function s.FromGyToHandOp(e,tp,eg,ep,ev,re,r,rp)
@@ -75,41 +75,40 @@ function s.FromGyToHandOp(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
-	-- Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- local g=Duel.SelectMatchingCard(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- if #g>0 then
-	-- 	Duel.SendtoHand(g,nil,REASON_EFFECT)
-	-- 	Duel.ConfirmCards(1-tp,g)
-	-- end
 end
 
+-- Effect 2
 function s.FaceUpSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.FaceUpSubterrorMonster(chkc) end
-	if chk ==  0 then
-		return Duel.GetLocationCount(tp, LOCATION_MZONE) > 0
-			and Duel.IsExistingMatchingCard(s.FaceUpSubterrorMonster, tp, LOCATION_MZONE, 0, 1, nil)
-	end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)
-	local g=Duel.SelectTarget(tp,s.FaceUpSubterrorMonster, tp, LOCATION_MZONE, LOCATION_MZONE, 1, 1, nil)
-	Duel.SetOperationInfo(0, CATEGORY_POSITION, g, 1, 0, 0)
+	if chk ==  0 then return Duel.IsExistingTarget(s.FaceUpSubterrorMonster,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
+	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)
+	local g=Duel.SelectTarget(tp,s.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
+	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		and Duel.IsExistingMatchingCard(s.SubterrorMonsterInDeck,tp,LOCATION_DECK,0,1,nil,e,tp) end
 	Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, nil, 1, tp, LOCATION_DECK)
 end
 
 function s.SpecialSummonSetOp(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		if Duel.ChangePosition(tc, POS_FACEDOWN_DEFENSE) ~= 0 then
-			if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-			local g=Duel.SelectMatchingCard(tp, s.SubterrorMonsterInDeck, tp, LOCATION_DECK, 0, 1, 1, nil, e, tp)
-			if #g>0 then
-				Duel.SpecialSummon(g,0,tp,tp,false,true,POS_FACEDOWN_DEFENSE)
-				Duel.ConfirmCards(1-tp,g)
-			end
+	if tc:IsRelateToEffect(e) then
+		cardsFLipped = Duel.ChangePosition(tc,POS_FACEDOWN_DEFENSE)
+	end
+	if cardsFLipped then
+		if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		local sg=Duel.SelectMatchingCard(tp,s.SubterrorMonsterInDeck,tp,LOCATION_DECK,0,1,1,nil,e,tp)
+		if #sg>0 then
+			print(sg)
+			Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
+			Duel.ConfirmCards(1-tp,sg)
 		end
 	end
 end
 
+-- Effect 3
 function s.FaceDownSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.FaceDownSubterrorFilter(chkc) end
 	local c=e:GetHandler()
@@ -127,7 +126,6 @@ end
 function s.SpecialSummonFromHand(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	-- if not (tc and tc:IsRelateToEffect(e)) then return end
 	if Duel.SpecialSummon(c, 0, tp, tp, false, false, POS_FACEUP)>0 then
 		if tc:IsFacedown() and tc:IsCanChangePosition() then
 			local pos=Duel.SelectPosition(tp, tc, POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
