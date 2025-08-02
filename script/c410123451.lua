@@ -20,8 +20,8 @@ function s.initial_effect(c)
 	e2:SetCode(EVENT_SUMMON_SUCCESS + EVENT_SPSUMMON_SUCCESS)
 	e2:SetRange(LOCATION_STZONE)
 	e2:SetCountLimit(1,{id,1})
-	e2:SetTarget(s.syntg)
-	e2:SetOperation(s.synop)
+	e2:SetTarget(s.FaceDownSubterrorTarget)
+	e2:SetOperation(s.ChangeToFaceUPSubterrorOp)
 	c:RegisterEffect(e2)
 end
 
@@ -51,4 +51,15 @@ function s.FaceDownSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)
 	local g=Duel.SelectTarget(tp,Card.IsFacedown,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
+end
+
+function s.ChangeToFaceUPSubterrorOp(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	if Duel.SpecialSummon(c, 0, tp, tp, false, false, POS_FACEUP)>0 then
+		if tc:IsFacedown() and tc:IsCanChangePosition() then
+			local pos=Duel.SelectPosition(tp, tc, POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
+			Duel.ChangePosition(tc, pos)
+		end
+	end
 end
