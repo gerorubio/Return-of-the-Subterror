@@ -101,7 +101,6 @@ function s.SpecialSummonSetOp(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		local sg=Duel.SelectMatchingCard(tp,s.SubterrorMonsterInDeck,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 		if #sg>0 then
-			print(sg)
 			Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
 			Duel.ConfirmCards(1-tp,sg)
 		end
@@ -110,7 +109,7 @@ end
 
 -- Effect 3
 function s.FaceDownSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.FaceDownSubterrorFilter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) end
 	local c=e:GetHandler()
 	if chk == 0 then
 		return Duel.GetLocationCount(tp,LOCATION_MZONE) > 0
