@@ -33,7 +33,7 @@ function s.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetRange(LOCATION_HAND)
-	e2:SetCountLimit(1,{id, 2})
+	e3:SetCountLimit(1,{id, 2})
 	e3:SetTarget(s.FaceDownSubterrorTarget)
 	e3:SetOperation(s.SpecialSummonFromHand)
 	c:RegisterEffect(e3)
@@ -109,7 +109,7 @@ end
 
 -- Effect 3
 function s.FaceDownSubterrorTarget(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.FaceDownSubterrorMonster(chkc) end
 	local c=e:GetHandler()
 	if chk == 0 then
 		return Duel.GetLocationCount(tp,LOCATION_MZONE) > 0
@@ -126,7 +126,7 @@ function s.SpecialSummonFromHand(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
 	if Duel.SpecialSummon(c, 0, tp, tp, false, false, POS_FACEUP)>0 then
-		if tc:IsFacedown() and tc:IsCanChangePosition() then
+		if tc:IsRelateToEffect(e) and tc:IsFacedown() and tc:IsCanChangePosition() then
 			local pos=Duel.SelectPosition(tp, tc, POS_FACEUP_ATTACK+POS_FACEUP_DEFENSE)
 			Duel.ChangePosition(tc, pos)
 		end
