@@ -2,39 +2,90 @@
 --Scripted by Sorpresa37
 local s,id=GetID()
 function s.initial_effect(c)
-	--fusion material
+	-- Fusion 2 Subterror monsters
 	c:EnableReviveLimit()
-	Fusion.AddProcMixRep(c,true,true,s.fil,1,99,CARD_CYBER_DRAGON)
-	Fusion.AddContactProc(c,s.contactfil,s.contactop,s.splimit)
-	--cannot be fusion material
+	Fusion.AddProcMixN(c,true,true,aux.FilterBoolFunctionEx(Card.IsSetCard,SET_SUBTERROR),2)
+	-- Aternative Special Summon procedure
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	e1:SetCode(EFFECT_SPSUMMON_PROC)
+	e1:SetRange(LOCATION_EXTRA)
+	e1:SetCountLimit(1,id)
+	e1:SetCondition(s.spcon) -- Special Summon Condition
+	e1:SetOperation(s.spop) -- Special Summon Operation
+	e1:SetValue(SUMMON_TYPE_FUSION)
+	c:RegisterEffect(e1)
+	-- Flip effect: Add Subterror trap
+	local e2 = Effect.CreateEffect(c)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP+EFFECT_TYPE_TRIGGER_O)
+	e2:SetProperty(EFFECT_FLAG_DELAY)
+	e2:SetCountLimit(1,{id,1})
+	e2:SetTarget(s.thtg)
+	e2:SetOperation(s.thop)
+	c:RegisterEffect(e2)
+	--turn set
 	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_SINGLE)
-	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-	e3:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
-	e3:SetValue(1)
+	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetCategory(CATEGORY_POSITION)
+	e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetRange(LOCATION_MZONE)
+	e2:SetCountLimit(1,{id,2})
+	e3:SetTarget(s.postg)
+	e3:SetOperation(s.posop)
 	c:RegisterEffect(e3)
 end
-s.material_setcode={SET_CYBER,SET_CYBER_DRAGON}
-function s.fil(c,fc,sumtype,tp,sub,mg,sg,contact)
-	if contact then sumtype=0 end
-	return c:IsRace(RACE_MACHINE,fc,sumtype,tp) and (not contact or c:IsType(TYPE_MONSTER,fc,sumtype,tp))
+
+s.listed_series={SET_SUBTERROR}
+
+function s.FaceDownSubterrorMonster(c)
+    return c:IsFacedown() and c:IsSetCard(SET_SUBTERROR)
 end
-function s.splimit(e,se,sp,st)
-	return e:GetHandler():GetLocation()~=LOCATION_EXTRA
+
+function s.spcon(e, c)
+	if c==nil then return true end
+	local tp=c:GetControler()
+	return Duel.CheckReleaseGroup(tp,s.FaceDownSubterrorMonster,1,false,1,true,c,tp,nil,false,nil, tp, c)
 end
-function s.contactfil(tp)
-	return Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil,tp)
+
+function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
+	local g=Duel.SelectMatchingCard(tp, s.FaceDownSubterrorMonster, tp, LOCATION_MZONE, 0, 1, 1, nil, tp)
+	Duel.Release(g,REASON_COST|REASON_MATERIAL)
+	c:SetMaterial(g)
 end
-function s.cfilter(c,tp)
-	return c:IsAbleToGraveAsCost() and (c:IsControler(tp) or c:IsFaceup())
+
+-- Effect 2
+function s.thfilter(c)
+	return c:IsSetCard(SET_SUBTERROR) and not c:IsCode(id) and c:IsAbleToHand() and c:IsTrapCard()
 end
-function s.contactop(g,tp,c)
-	Duel.SendtoGrave(g,REASON_COST|REASON_MATERIAL)
-	--spsummon condition
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetCode(EFFECT_SET_BASE_ATTACK)
-	e1:SetReset(RESET_EVENT|RESETS_STANDARD_DISABLE-RESET_TOFIELD)
-	e1:SetValue(#g*1000)
-	c:RegisterEffect(e1)
+
+function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+end
+
+function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
+	if #g>0 then
+		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		Duel.ConfirmCards(1-tp,g)
+	end
+end
+
+-- Effect 3
+function s.postg(e,tp,eg,ep,ev,re,r,rp,chk)
+	local c=e:GetHandler()
+	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(id)==0 end
+	c:RegisterFlagEffect(id,RESET_EVENT|RESETS_STANDARD-RESET_TURN_SET|RESET_PHASE|PHASE_END,0,1)
+	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
+end
+
+function s.posop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) and c:IsFaceup() then
+		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
+	end
 end
