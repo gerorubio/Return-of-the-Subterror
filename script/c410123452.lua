@@ -29,12 +29,12 @@ function s.initial_effect(c)
 	-- Set and copy flip effect of subterror monster
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
-	e3:SetCategory(CATEGORY_POSITION)
 	e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,{id,2})
-	e3:SetTarget(s.postg)
-	e3:SetOperation(s.posop)
+	e3:SetTarget(s.copytg)
+	e3:SetOperation(s.copyop)
 	c:RegisterEffect(e3)
 end
 
@@ -88,4 +88,34 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
+end
+
+function s.copyfilter(c)
+	return c:IsSetCard(SET_SUBTERROR) and c:IsMonster() and c:IsType(TYPE_FLIP)
+end
+
+function s.copytg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chkc then return false end
+	local c=e:GetHandler()
+	if chk==0 then return Duel.IsExistingTarget(s.copyfilter,tp,LOCATION_GRAVE,0,1,nil) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+	Duel.SelectTarget(tp,s.copyfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+end
+
+function s.copyop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	if not (c:IsRelateToEffect(e) and c:IsFaceup()) then return end
+	if not (tc and tc:IsRelateToEffect(e)) then return end
+
+	-- Become that monster’s FLIP effect
+	local e1=tc:GetCardEffect(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)
+	if e1 then
+		local code=tc:GetOriginalCode()
+		c:CopyEffect(code,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
+	end
+
+	-- Then Set this card
+	Duel.BreakEffect()
+	Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 end
