@@ -108,14 +108,20 @@ function s.copyop(e,tp,eg,ep,ev,re,r,rp)
 	if not (c:IsRelateToEffect(e) and c:IsFaceup()) then return end
 	if not (tc and tc:IsRelateToEffect(e)) then return end
 
-	-- Become that monster’s FLIP effect
-	local e1=tc:GetCardEffect(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)
-	if e1 then
-		local code=tc:GetOriginalCode()
-		c:CopyEffect(code,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
+	local effs={tc:GetCardEffect(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)}
+	for _,eff in ipairs(effs) do
+		local op=eff:GetOperation()
+		local tg=eff:GetTarget()
+		if op then
+			if not tg or tg(e,tp,eg,ep,ev,re,r,rp,0) then
+				Duel.BreakEffect()
+				if tg then tg(e,tp,eg,ep,ev,re,r,rp,1) end
+				op(e,tp,eg,ep,ev,re,r,rp)
+			end
+		end
 	end
 
-	-- Then Set this card
+	-- then set Ravinsoptera face-down
 	Duel.BreakEffect()
 	Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 end
