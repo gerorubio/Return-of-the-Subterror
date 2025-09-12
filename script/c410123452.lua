@@ -26,15 +26,15 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	--turn set
+	-- Set and copy flip effect of subterror monster
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_POSITION)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,{id,2})
-	e3:SetTarget(s.postg)
-	e3:SetOperation(s.posop)
+	e3:SetTarget(s.copytg)
+	e3:SetOperation(s.copyop)
 	c:RegisterEffect(e3)
 end
 
@@ -88,4 +88,35 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
+end
+
+-- filtro: buscar Subterror con efecto FLIP en cementerio
+function s.copyfilter(c)
+	return c:IsSetCard(SET_SUBTERROR) and c:HasEffect(EFFECT_FLIP) and c:IsMonster()
+end
+
+function s.copytg(e,tp,eg,ep,ev,re,r,rp,chk)
+	local c=e:GetHandler()
+	if chk==0 then 
+		return c:IsCanTurnSet() 
+			and Duel.IsExistingMatchingCard(s.copyfilter,tp,LOCATION_GRAVE,0,1,nil) 
+	end
+	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
+end
+
+function s.copyop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if not (c:IsRelateToEffect(e) and c:IsFaceup()) then return end
+	-- Seleccionar Subterror con FLIP en GY
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EFFECT)
+	local g=Duel.SelectMatchingCard(tp,s.copyfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+	local tc=g:GetFirst()
+	if not tc then return end
+
+	-- Colocarse boca abajo
+	Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
+
+	-- Copiar efecto flip
+	local code=tc:GetOriginalCode()
+	local cid=c:CopyEffect(code,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
 end
