@@ -88,39 +88,3 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end
-
-function s.copyfilter(c)
-	return c:IsSetCard(SET_SUBTERROR) and c:IsMonster() and c:IsType(TYPE_FLIP)
-end
-
-function s.copytg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return false end
-	local c=e:GetHandler()
-	if chk==0 then return Duel.IsExistingTarget(s.copyfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	Duel.SelectTarget(tp,s.copyfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-end
-
-function s.copyop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local tc=Duel.GetFirstTarget()
-	if not (c:IsRelateToEffect(e) and c:IsFaceup()) then return end
-	if not (tc and tc:IsRelateToEffect(e)) then return end
-
-	local effs={tc:GetCardEffect(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)}
-	for _,eff in ipairs(effs) do
-		local op=eff:GetOperation()
-		local tg=eff:GetTarget()
-		if op then
-			if not tg or tg(e,tp,eg,ep,ev,re,r,rp,0) then
-				Duel.BreakEffect()
-				if tg then tg(e,tp,eg,ep,ev,re,r,rp,1) end
-				op(e,tp,eg,ep,ev,re,r,rp)
-			end
-		end
-	end
-
-	-- then set Ravinsoptera face-down
-	Duel.BreakEffect()
-	Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
-end
