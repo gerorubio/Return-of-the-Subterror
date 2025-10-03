@@ -110,7 +110,10 @@ end
 function s.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	
+
+	print(tc)
+	print('\n')
+
 	if(tc:IsCode(16428514)) then -- Subterror Guru
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
     local g=Duel.SelectMatchingCard(tp,s.thfilterGuru,tp,LOCATION_DECK,0,1,1,nil)
@@ -124,6 +127,39 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
     if #g>0 then
 			Duel.ChangePosition(g, POS_FACEDOWN_DEFENSE)
     end
+	elseif tc:IsCode(47556396) then -- Subterror Behemoth Speleogeist
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+    local g=Duel.SelectMatchingCard(tp, function(c) 
+			return c:IsDefensePos() or c:GetAttack()>0 
+    end, tp, LOCATION_MZONE, LOCATION_MZONE, 1, 1, nil)
+    local sc=g:GetFirst()
+    if sc then
+			if sc:IsDefensePos() then
+				Duel.ChangePosition(sc, POS_FACEUP_ATTACK)
+			end
+			if sc:IsFaceup() then
+				local e1=Effect.CreateEffect(c)
+				e1:SetType(EFFECT_TYPE_SINGLE)
+				e1:SetCode(EFFECT_SET_ATTACK_FINAL)
+				e1:SetValue(0)
+				e1:SetReset(RESET_EVENT|RESETS_STANDARD)
+				sc:RegisterEffect(e1)
+			end
+    end
+	elseif tc:IsCode(78202553) then -- Subterror Behemoth Stalagmo
+		print('\n')
+	elseif tc:IsCode(21607304) then -- Subterror Behemoth Voltelluric
+		print('\n')
+	elseif tc:IsCode(1151281) then -- Subterror Behemoth Phospheroglacier
+		print('\n')
+	elseif tc:IsCode(42713844) then -- Subterror Behemoth Umastryx
+		print('\n')
+	elseif tc:IsCode(95218695) then -- Subterror Behemoth Dragossuary
+		print('\n')
+	elseif tc:IsCode(65976795) then -- Subterror Behemoth Stygokraken
+		print('\n')
+	elseif tc:IsCode(410123450) then -- Subterror Behemoth Sorcerer
+		print('\n')
 	end
 
 	-- After resolving, Set Ravinsoptera
