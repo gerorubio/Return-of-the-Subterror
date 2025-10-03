@@ -29,12 +29,11 @@ function s.initial_effect(c)
 	-- Set and copy flip effect of subterror monster
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetCategory(CATEGORY_POSITION)
 	e3:SetType(EFFECT_TYPE_IGNITION)
-	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetRange(LOCATION_MZONE)
-	e3:SetCountLimit(1,{id,2})
-	e3:SetTarget(s.copytg)
-	e3:SetOperation(s.copyop)
+	e3:SetTarget(s.postg)
+	e3:SetOperation(s.posop)
 	c:RegisterEffect(e3)
 end
 
