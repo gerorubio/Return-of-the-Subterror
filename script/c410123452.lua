@@ -5,6 +5,7 @@ function s.initial_effect(c)
 	-- Fusion 2 Subterror monsters
 	c:EnableReviveLimit()
 	Fusion.AddProcMixN(c,true,true,aux.FilterBoolFunctionEx(Card.IsSetCard,SET_SUBTERROR),2)
+
 	-- Aternative Special Summon procedure
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -16,6 +17,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.spop) -- Special Summon Operation
 	e1:SetValue(SUMMON_TYPE_FUSION)
 	c:RegisterEffect(e1)
+
 	-- Flip effect: Add Subterror trap
 	local e2 = Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
@@ -26,12 +28,15 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	-- Set and copy flip effect of subterror monster
+
+	-- Set and copy flip effect of subterror monster in GY
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_POSITION)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
+	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e3:SetCountLimit(1,{id,2})
 	e3:SetTarget(s.postg)
 	e3:SetOperation(s.posop)
 	c:RegisterEffect(e3)
@@ -87,4 +92,47 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
+end
+
+function s.gyfilter(c)
+	return c:IsSetCard(SET_SUBTERROR) and c:IsType(TYPE_FLIP) and c:IsMonster()
+end
+
+function s.postg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	local c=e:GetHandler()
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and s.gyfilter(chkc) end
+	if chk==0 then return Duel.IsExistingTarget(s.gyfilter,tp,LOCATION_GRAVE,0,1,nil) and c:IsCanTurnSet() end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+	local g=Duel.SelectTarget(tp,s.gyfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
+end
+
+function s.posop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	
+	if(tc:IsCode(16428514)) then -- Subterror Guru
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+    local g=Duel.SelectMatchingCard(tp,s.thfilterGuru,tp,LOCATION_DECK,0,1,1,nil)
+    if #g>0 then
+			Duel.SendtoHand(g,nil,REASON_EFFECT)
+			Duel.ConfirmCards(1-tp,g)
+    end
+	elseif tc:IsCode(92970404) then -- Subterror Behemoth Ultramafus
+		local g=Duel.GetMatchingGroup(Card.IsCanTurnSet, tp, LOCATION_MZONE, LOCATION_MZONE, nil)
+		g:RemoveCard(c)
+    if #g>0 then
+			Duel.ChangePosition(g, POS_FACEDOWN_DEFENSE)
+    end
+	end
+
+	-- After resolving, Set Ravinsoptera
+	if c:IsFaceup() and c:IsRelateToEffect(e) then
+		Duel.BreakEffect()
+		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
+	end
+end
+
+function s.thfilterGuru(c)
+    return c:IsSetCard(SET_SUBTERROR) and not c:IsCode(id) and c:IsAbleToHand()
 end
