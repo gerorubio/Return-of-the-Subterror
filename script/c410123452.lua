@@ -129,8 +129,8 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
     end
 	elseif tc:IsCode(47556396) then -- Subterror Behemoth Speleogeist
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-    local g=Duel.SelectMatchingCard(tp, function(c) 
-			return c:IsDefensePos() or c:GetAttack()>0 
+    local g=Duel.SelectTarget(tp, function(c) 
+			return (c:IsDefensePos() or c:GetAttack()>0) and c:IsCanChangePosition()
     end, tp, LOCATION_MZONE, LOCATION_MZONE, 1, 1, nil)
     local sc=g:GetFirst()
     if sc then
@@ -147,17 +147,59 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 			end
     end
 	elseif tc:IsCode(78202553) then -- Subterror Behemoth Stalagmo
-		print('\n')
+		if Duel.DiscardHand(tp,s.tgfilterStalagmo,1,1,REASON_EFFECT|REASON_DISCARD)~=0 then
+			Duel.Draw(tp,2,REASON_EFFECT)
+		end
 	elseif tc:IsCode(21607304) then -- Subterror Behemoth Voltelluric
-		print('\n')
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)
+    local g=Duel.SelectMatchingCard(tp, function(c)
+			return c:IsFacedown() and c:IsControler(1-tp) and c:IsControlerCanBeChanged()
+    end, tp, 0, LOCATION_MZONE, 1, 1, nil)
+
+    local sc=g:GetFirst()
+    if sc then
+			local turn_count=1
+			if Duel.IsTurnPlayer(1-tp) then
+				turn_count=2
+			elseif Duel.IsPhase(PHASE_END) then
+				turn_count=3
+			end
+			Duel.GetControl(sc,tp,PHASE_END,turn_count)
+    end
 	elseif tc:IsCode(1151281) then -- Subterror Behemoth Phospheroglacier
-		print('\n')
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+		local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_DECK,0,1,1,nil)
+		if #g>0 then
+			Duel.SendtoGrave(g,REASON_EFFECT)
+		end
 	elseif tc:IsCode(42713844) then -- Subterror Behemoth Umastryx
-		print('\n')
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+		local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_MZONE,1,1,nil)
+		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
+		local tc=Duel.GetFirstTarget()
+		if tc:IsRelateToEffect(e) then
+			Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
+		end
 	elseif tc:IsCode(95218695) then -- Subterror Behemoth Dragossuary
-		print('\n')
+		local e1=Effect.CreateEffect(e:GetHandler())
+		e1:SetType(EFFECT_TYPE_FIELD)
+		e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
+		e1:SetTargetRange(LOCATION_ONFIELD,0)
+		e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_SUBTERROR))
+		e1:SetValue(aux.indoval)
+		e1:SetReset(RESET_PHASE|PHASE_END)
+		Duel.RegisterEffect(e1,tp)
 	elseif tc:IsCode(65976795) then -- Subterror Behemoth Stygokraken
-		print('\n')
+		local ct=Duel.GetMatchingGroupCount(s.filter,tp,LOCATION_MZONE,0,nil)
+		if chkc then return chkc:IsOnField() and chkc:IsFacedown() end
+		if chk==0 then return Duel.IsExistingTarget(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,ct,nil) end
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+		local g=Duel.SelectTarget(tp,Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,ct,ct,nil)
+		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
+		local g=Duel.GetTargetCards(e)
+		if #g>0 then
+			Duel.Destroy(g,REASON_EFFECT)
+		end
 	elseif tc:IsCode(410123450) then -- Subterror Behemoth Sorcerer
 		print('\n')
 	end
@@ -171,4 +213,8 @@ end
 
 function s.thfilterGuru(c)
     return c:IsSetCard(SET_SUBTERROR) and not c:IsCode(id) and c:IsAbleToHand()
+end
+
+function s.tgfilterStalagmo(c)
+	return c:IsMonster() and c:IsSetCard(SET_SUBTERROR) and c:IsDiscardable()
 end

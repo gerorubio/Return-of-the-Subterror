@@ -44,7 +44,6 @@ s.listed_names={id}
 
 -- Filters
 function s.GyTarget(c)
-	print('2')
 	return c:IsSetCard(SET_SUBTERROR) and c:IsAbleToHand()
 end
 
