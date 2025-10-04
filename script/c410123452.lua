@@ -201,7 +201,15 @@ function s.posop(e,tp,eg,ep,ev,re,r,rp)
 			Duel.Destroy(g,REASON_EFFECT)
 		end
 	elseif tc:IsCode(410123450) then -- Subterror Behemoth Sorcerer
-		print('\n')
+		if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.GyTarget(chkc) end
+		if chk==0 then return Duel.IsExistingTarget(s.GyTarget,tp,LOCATION_GRAVE,0,1,nil) end
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+		local g=Duel.SelectTarget(tp,s.GyTarget,tp,LOCATION_GRAVE,0,1,1,nil)
+		Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,tp,0)
+		local tc=Duel.GetFirstTarget()
+		if tc:IsRelateToEffect(e) then
+			Duel.SendtoHand(tc,nil,REASON_EFFECT)
+		end
 	end
 
 	-- After resolving, Set Ravinsoptera
