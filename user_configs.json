@@ -1,0 +1,17 @@
+{
+	"repos": [
+		{
+			"url": "https://github.com/gerorubio/Return-of-the-Subterror",
+			"repo_name": "Return of the  Subterror",
+			"repo_path": "./repositories/customcards",
+			"script_path": "script",
+			"data_path": "",
+			"should_update": true,
+			"should_read": true
+		}
+	],
+	"urls": [
+	],
+	"servers": [
+	]
+}
